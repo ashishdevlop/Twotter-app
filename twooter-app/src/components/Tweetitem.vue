@@ -1,5 +1,5 @@
 <template>
-  <div class="tweet-item">
+  <div class="tweet-item" @click="favouriteTweet(tweet.id)">
     <div class="user-profile__tweet">
       <div class="tweet-item__user">@{{ username }}</div>
       <div class="tweet-item__context">
@@ -18,8 +18,13 @@ export default {
       required: true,
     },
     tweet: {
-      type: object,
-      // required: true,
+      type: Object,
+      required: true,
+    },
+  },
+  methods: {
+    favouriteTweet(id) {
+      this.$emit("favourite", id);
     },
   },
 };
@@ -36,7 +41,7 @@ export default {
   transition: all 0.25s ease;
 }
 
-.tweet-item :hover {
+.tweet-item:hover {
   transform: scale(1.1, 1.1);
 }
 
