@@ -7,16 +7,29 @@
       <div class="user-profile__follower-count">
         <strong>Followers:</strong> {{ followers }}
       </div>
-      <form class="user-profile__create-tweet">
-        <label for="newTweet"><strong>New Tweet</strong></label>
-        <textarea id="newTweet" row="4" />
+      <form
+        class="user-profile__create-tweet"
+        @submit.prevent="createNewTweet"
+        :class="{ '--exceeded': newTweetCharacterCount >= 180 }"
+      >
+        <label for="newTweet"
+          ><strong>New Tweet</strong>( {{ newTweetCharacterCount }}/180)</label
+        >
+        <textarea id="newTweet" row="4" v-model="newTweetContent" />
 
         <div class="user-profile__create-tweet-type">
           <label for="newTweetType"><strong>Type:</strong></label>
-          <select :id="newTweetType">
-            <option :value="option.value"
+          <select :id="newTweetType" v-model="selectedTweetType">
+            <option
+              :value="option.value"
+              v-for="(option, index) in TweetTypes"
+              :key="index"
+            >
+              {{ option.name }}
+            </option>
           </select>
         </div>
+        <button>Tweet!</button>
       </form>
     </div>
     <div class="user-profile__tweets-wrapper">
@@ -39,6 +52,12 @@ export default {
   components: { Tweetitem },
   data() {
     return {
+      newTweetContent: "",
+      selectedTweetType: "instant",
+      TweetTypes: [
+        { value: "draft", name: "Draft" },
+        { value: "instant", name: "Instant Tweet" },
+      ],
       followers: 0,
       user: {
         id: 1,
@@ -68,8 +87,8 @@ export default {
     },
   },
   computed: {
-    fullName() {
-      return `${this.user.firstName} ${this.user.lastName}`;
+    newTweetCharacterCount() {
+      return this.newTweetContent.length;
     },
   },
   methods: {
@@ -79,6 +98,16 @@ export default {
     toggleFavourite(id) {
       console.log(`Favourited   tweet  #${id}?`);
     },
+    createNewTweet() {
+      if (this.newTweetContent && this.selectedTweetType !== "draft") {
+        this.user.tweets.unshift({
+          id: this.user.tweets.length + 1,
+          content: this.newTweetContent,
+          // other tweet properties
+        });
+        this.newTweetContent = ""; // Clear the new tweet content input
+      }
+    },
   },
   mounted() {
     this.followUser();
@@ -86,44 +115,55 @@ export default {
 };
 </script>
 
-<style>
+<style lang="scss" scoped>
 .user-profile {
   display: grid;
   grid-template-columns: 1fr 3fr;
   width: 100%;
   padding: 50px 5%;
-}
+  .user-profile__user-panel {
+    display: flex;
+    flex-direction: column;
+    margin-right: 50px;
+    padding: 20px;
+    background-color: white;
+    border-radius: 5px;
+    border: 1px solid #dfe3e8;
 
-.user-profile__user-panel {
-  display: flex;
-  flex-direction: column;
-  margin-right: 50px;
-  padding: 20px;
-  background-color: white;
-  border-radius: 5px;
-  border: 1px solid #dfe3e8;
-}
+    h1 {
+      margin: 0;
+    }
 
-.user-profile__admin-badge {
-  background: rebeccapurple;
-  color: white;
-  border-radius: 5px;
-  margin-right: auto;
-  padding: 0 10px;
-  font-weight: bold;
-}
-h1 {
-  margin: 0;
-}
+    .user-profile__user-panel {
+      display: flex;
+      flex-direction: column;
+      margin-right: 50px;
+      padding: 20px;
+      background-color: white;
+      border-radius: 5px;
+      border: 1px solid #dfe3e8;
+    }
 
-.user-profile__tweets-wrapper {
-  display: grid;
-  grid-gap: 10px;
-}
+    .user-profile__create-tweet {
+      padding-top: 20px;
+      display: flex;
+      flex-direction: column;
 
-.user-profile__create-tweet {
-  padding-top: 20px;
-  display: flex;
-  flex-direction: column;
+      &:--exceeded {
+        color: red;
+        border-color: red;
+
+        button {
+          background-color: red;
+          border: none;
+          color: white;
+        }
+      }
+    }
+  }
+  .user-profile__tweets-wrapper {
+    display: grid;
+    grid-gap: 10px;
+  }
 }
 </style>
